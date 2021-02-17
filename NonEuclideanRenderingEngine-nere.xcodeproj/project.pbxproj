@@ -41,7 +41,7 @@
 		2199065025DDB33300BAE6F3 = {
 			isa = PBXGroup;
 			children = (
-				2199065B25DDB33300BAE6F3 /* NonEuclideanRenderingEngine-nere */,
+				2199065C25DDB33300BAE6F3 /* main.cpp */,
 				2199065A25DDB33300BAE6F3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -52,14 +52,6 @@
 				2199065925DDB33300BAE6F3 /* NonEuclideanRenderingEngine-nere */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		2199065B25DDB33300BAE6F3 /* NonEuclideanRenderingEngine-nere */ = {
-			isa = PBXGroup;
-			children = (
-				2199065C25DDB33300BAE6F3 /* main.cpp */,
-			);
-			path = "NonEuclideanRenderingEngine-nere";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

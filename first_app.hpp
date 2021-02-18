@@ -10,6 +10,7 @@
 
 #include "nere_window.hpp"
 #include "nere_pipeline.hpp"
+#include "nere_device.hpp"
 
 namespace nere {
 
@@ -25,6 +26,13 @@ namespace nere {
             // instantialize a nereWindow
             NereWindow nereWindow{WIDTH, HEIGHT, "test"};
 
-            NerePipeline nerePipeline{"../shaders/shader.vert.spv"};
+            NereDevice nereDevice{nereWindow};
+
+            // read compiled shader code
+            NerePipeline nerePipeline{
+                nereDevice,
+                "../shaders/shader.vert.spv",
+                "../shaders/shader.frag.spv",
+                NerePipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT)};
     };
 }

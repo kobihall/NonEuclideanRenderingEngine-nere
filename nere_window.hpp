@@ -13,24 +13,24 @@
 
 #include <string>
 namespace nere {
-    
-class NereWindow {
-public:
-    NereWindow(int w, int h, std::string name);
-    ~NereWindow();
-    
-    NereWindow(const NereWindow &) = delete;
-    NereWindow &operator=(const NereWindow &) = delete;
-    
-    bool shouldClose() { return glfwWindowShouldClose(window); }
-    
-private:
-    void initWindow();
-    
-    const int width;
-    const int height;
-    
-    std::string windowName;
-    GLFWwindow *window;
-};
+        
+    class NereWindow {
+        public:
+            NereWindow(int w, int h, std::string name);
+            ~NereWindow();
+            
+            NereWindow(const NereWindow &) = delete;
+            NereWindow &operator=(const NereWindow &) = delete;
+            
+            bool shouldClose() { return glfwWindowShouldClose(window); }
+            
+        private:
+            void initWindow();
+            
+            const int width;
+            const int height;
+            
+            std::string windowName;
+            GLFWwindow *window;
+    };
 }

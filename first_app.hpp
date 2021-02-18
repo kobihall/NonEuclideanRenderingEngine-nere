@@ -9,19 +9,22 @@
 #pragma once
 
 #include "nere_window.hpp"
+#include "nere_pipeline.hpp"
 
 namespace nere {
 
-class FirstApp {
-public:
-    static constexpr int WIDTH = 800;
-    static constexpr int HEIGHT = 600;
-    
-    
-    void run();
-    
-private:
-    // instantialize a nereWindow
-    NereWindow nereWindow{WIDTH, HEIGHT, "test"};
-};
+    class FirstApp {
+        public:
+            static constexpr int WIDTH = 800;
+            static constexpr int HEIGHT = 600;
+
+
+            void run();
+
+        private:
+            // instantialize a nereWindow
+            NereWindow nereWindow{WIDTH, HEIGHT, "test"};
+
+            NerePipeline nerePipeline{"../shaders/shader.vert.spv"};
+    };
 }

@@ -43,6 +43,8 @@ namespace nere {
         NerePipeline(const NerePipeline&) = delete;
         void operator=(const NerePipeline&) = delete;
 
+        void bind(VkCommandBuffer commandBuffer);
+
         // fills configInfo members for each pipeline stage
         static PipelineConfigInfo defaultPipelineConfigInfo(uint32_t width, uint32_t height);
 

@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.10)
 
 project(nereProject)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++11 " )
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++14 " )
 
-file(GLOB src_files "*.h" "*.cpp")
+file(GLOB src_files "*.hpp" "*.cpp")
 add_executable(${PROJECT_NAME} ${src_files})
 
 find_package(Vulkan REQUIRED)

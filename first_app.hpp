@@ -12,6 +12,7 @@
 #include "nere_pipeline.hpp"
 #include "nere_device.hpp"
 #include "nere_swap_chain.hpp"
+#include "user_settings.hpp"
 
 // std
 #include <memory>
@@ -39,6 +40,8 @@ namespace nere {
             void drawFrame();
 
             // instantialize a nereWindow
+            UserSettings userSettings{};
+            
             NereWindow nereWindow{WIDTH, HEIGHT, "test"};
 
             NereDevice nereDevice{nereWindow};

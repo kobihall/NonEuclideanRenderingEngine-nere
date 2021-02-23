@@ -19,14 +19,33 @@ namespace nere {
             NereDevice& device,
             const std::string& vertFilepath,
             const std::string& fragFilepath,
+            const std::string& compFilepath,
             const PipelineConfigInfo& configInfo) : nereDevice{device} {
-        createGraphicsPipeline(vertFilepath, fragFilepath, configInfo);
+        userSettings_ = configInfo.userSettings;
+        switch(userSettings_.chosenPipeline) {
+            case NERE_GRAPHICS_PIPELINE:
+                createGraphicsPipeline(vertFilepath, fragFilepath, configInfo);
+                break;
+            case NERE_COMPUTE_PIPELINE:
+                createComputePipeline(compFilepath, configInfo);
+                break;
+            throw std::runtime_error("no render pipeline specified in UserSettings!");
+        }
     }
 
     NerePipeline::~NerePipeline(){
-        vkDestroyShaderModule(nereDevice.device(), vertShaderModule, nullptr);
-        vkDestroyShaderModule(nereDevice.device(), fragShaderModule, nullptr);
-        vkDestroyPipeline(nereDevice.device(), graphicsPipeline, nullptr);
+        switch(userSettings_.chosenPipeline) {
+            case NERE_GRAPHICS_PIPELINE:
+                vkDestroyShaderModule(nereDevice.device(), vertShaderModule, nullptr);
+                vkDestroyShaderModule(nereDevice.device(), fragShaderModule, nullptr);
+                vkDestroyPipeline(nereDevice.device(), graphicsPipeline, nullptr);
+                break;
+            case NERE_COMPUTE_PIPELINE:
+                vkDestroyShaderModule(nereDevice.device(), compShaderModule, nullptr);
+                vkDestroyPipeline(nereDevice.device(), computePipeline, nullptr);
+                break;
+            throw std::runtime_error("no render pipeline specified in UserSettings!");
+        }
     }
 
     std::vector<char> NerePipeline::readFile(const std::string& filepath){
@@ -111,6 +130,32 @@ namespace nere {
 
     }
 
+    void NerePipeline::createComputePipeline(const std::string& compFilepath, const PipelineConfigInfo& configInfo) {
+        assert(configInfo.pipelineLayout != VK_NULL_HANDLE && "Cannot create compute pipeline:: no pipelineLayout provided in configInfo");
+        assert(configInfo.renderPass != VK_NULL_HANDLE && "Cannot create compute pipeline:: no renderPass provided in configInfo");
+        auto compCode = readFile(compFilepath);
+
+        createShaderModule(compCode, &compShaderModule);
+
+        VkPipelineShaderStageCreateInfo shaderStage = {};
+        shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        shaderStage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+        shaderStage.module = compShaderModule;
+        shaderStage.pName = "main";
+        shaderStage.flags = 0;
+        shaderStage.pNext = nullptr;
+        shaderStage.pSpecializationInfo = nullptr;
+
+        VkComputePipelineCreateInfo pipelineInfo{};
+        pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+        pipelineInfo.stage = shaderStage;
+        pipelineInfo.layout = configInfo.pipelineLayout;
+
+        if(vkCreateComputePipelines(nereDevice.device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &computePipeline) != VK_SUCCESS) {
+            throw std::runtime_error("failed to build compute pipeline");
+        }
+    }
+
     void NerePipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule){
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -122,9 +167,17 @@ namespace nere {
         }
     }
 
-    // bind command buffer to the graphics pipeline
+    // bind command buffer to the chosen pipeline
     void NerePipeline::bind(VkCommandBuffer commandBuffer) {
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+        switch(userSettings_.chosenPipeline) {
+            case NERE_GRAPHICS_PIPELINE:
+                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+                break;
+            case NERE_COMPUTE_PIPELINE:
+                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
+                break;
+            throw std::runtime_error("no render pipeline specified in UserSettings!");
+        }
     }
 
     PipelineConfigInfo NerePipeline::defaultPipelineConfigInfo(uint32_t width, uint32_t height) {

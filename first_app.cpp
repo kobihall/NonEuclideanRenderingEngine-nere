@@ -51,10 +51,13 @@ namespace nere {
         auto pipelineConfig = NerePipeline::defaultPipelineConfigInfo(nereSwapChain.width(), nereSwapChain.height());
         pipelineConfig.renderPass = nereSwapChain.getRenderPass();
         pipelineConfig.pipelineLayout = pipelineLayout;
+        userSettings.chosenPipeline = NERE_GRAPHICS_PIPELINE;
+        pipelineConfig.userSettings = userSettings;
         nerePipeline = std::make_unique<NerePipeline>(
             nereDevice,
             "../shaders/shader.vert.spv",
             "../shaders/shader.frag.spv",
+            "../shaders/shader.comp.spv",
             pipelineConfig
         );
     }
@@ -94,12 +97,19 @@ namespace nere {
             renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
             renderPassInfo.pClearValues = clearValues.data();
 
-            vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
             nerePipeline->bind(commandBuffers[i]);
-            vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
-
-            vkCmdEndRenderPass(commandBuffers[i]);
+            switch(userSettings.chosenPipeline) {
+                case NERE_GRAPHICS_PIPELINE:
+                    vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+                    vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+                    vkCmdEndRenderPass(commandBuffers[i]);
+                    break;
+                case NERE_COMPUTE_PIPELINE:
+                    vkCmdDispatch(commandBuffers[i], 10, 10,1);
+                    break;
+                throw std::runtime_error("no render pipeline specified in UserSettings!");
+            }
+            
             if(vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
                 throw std::runtime_error("failed to record command buffer!");
             }

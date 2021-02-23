@@ -8,6 +8,7 @@
 #pragma once
 
 #include "nere_device.hpp"
+#include "user_settings.hpp"
 
 // std
 #include <string>
@@ -17,6 +18,7 @@ namespace nere {
 
     // configInfo for fixed function pipeline stages
     struct PipelineConfigInfo {
+        UserSettings userSettings;
         VkViewport viewport;
         VkRect2D scissor;
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
@@ -36,6 +38,7 @@ namespace nere {
             NereDevice& device, 
             const std::string& vertFilepath, 
             const std::string& fragFilepath,
+            const std::string& compFilepath,
             const PipelineConfigInfo& configInfo);
         ~NerePipeline();
 
@@ -58,12 +61,20 @@ namespace nere {
             const std::string& fragFilepath, 
             const PipelineConfigInfo& configInfo);
 
+        void createComputePipeline(
+            const std::string& compFilepath, 
+            const PipelineConfigInfo& configInfo);
+
         // fills configInfo members for shaderModule
         void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 
+        UserSettings userSettings_{};
+
         NereDevice& nereDevice;
         VkPipeline graphicsPipeline;
+        VkPipeline computePipeline;
         VkShaderModule vertShaderModule;
         VkShaderModule fragShaderModule;
+        VkShaderModule compShaderModule;
     };
 }

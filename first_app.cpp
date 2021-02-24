@@ -15,6 +15,7 @@
 namespace nere {
 
     FirstApp::FirstApp() {
+        loadModels();
         createPipelineLayout();
         createPipeline();
         createCommandBuffers();
@@ -33,6 +34,16 @@ namespace nere {
         }
 
         vkDeviceWaitIdle(nereDevice.device());
+    }
+
+    void FirstApp::loadModels() {
+        std::vector<NereModel::Vertex> vertices {
+            {{0.0f, -0.5f}},
+            {{0.5f, 0.5f}},
+            {{-0.5f, 0.5f}}
+        };
+
+        nereModel = std::make_unique<NereModel>(nereDevice, vertices);
     }
 
     void FirstApp::createPipelineLayout() {
@@ -98,10 +109,12 @@ namespace nere {
             renderPassInfo.pClearValues = clearValues.data();
 
             nerePipeline->bind(commandBuffers[i]);
+            
             switch(userSettings.chosenPipeline) {
                 case NERE_GRAPHICS_PIPELINE:
                     vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-                    vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+                    nereModel->bind(commandBuffers[i]);
+                    nereModel->draw(commandBuffers[i]);
                     vkCmdEndRenderPass(commandBuffers[i]);
                     break;
                 case NERE_COMPUTE_PIPELINE:
@@ -109,7 +122,7 @@ namespace nere {
                     break;
                 throw std::runtime_error("no render pipeline specified in UserSettings!");
             }
-            
+
             if(vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
                 throw std::runtime_error("failed to record command buffer!");
             }

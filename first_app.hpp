@@ -12,6 +12,7 @@
 #include "nere_pipeline.hpp"
 #include "nere_device.hpp"
 #include "nere_swap_chain.hpp"
+#include "nere_model.hpp"
 
 // std
 #include <memory>
@@ -33,6 +34,7 @@ namespace nere {
             void run();
 
         private:
+            void loadModels();
             void createPipelineLayout();
             void createPipeline();
             void createCommandBuffers();
@@ -49,5 +51,7 @@ namespace nere {
             std::unique_ptr<NerePipeline> nerePipeline;
             VkPipelineLayout pipelineLayout;
             std::vector<VkCommandBuffer> commandBuffers;
+
+            std::unique_ptr<NereModel> nereModel;
     };
 }

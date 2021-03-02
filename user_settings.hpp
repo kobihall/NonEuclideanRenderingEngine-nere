@@ -11,4 +11,6 @@ enum availablePipelines{NERE_GRAPHICS_PIPELINE, NERE_COMPUTE_PIPELINE};
 
 struct UserSettings final {
     availablePipelines chosenPipeline;
+    int width;
+    int height;
 };

@@ -15,7 +15,11 @@
 #include <stdexcept>
 
 int main() {
-    nere::FirstApp app{};
+    UserSettings userSettings;
+    userSettings.chosenPipeline = NERE_COMPUTE_PIPELINE;
+    userSettings.width = 800;
+    userSettings.height = 600;
+    nere::FirstApp app{userSettings};
     
     // try&catch run from application
     try {

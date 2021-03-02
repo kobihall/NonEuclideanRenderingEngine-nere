@@ -9,6 +9,7 @@
 #pragma once
 
 #include "nere_window.hpp"
+#include "Pixel.hpp"
 #include "nere_pipeline.hpp"
 #include "nere_device.hpp"
 #include "nere_swap_chain.hpp"
@@ -19,6 +20,7 @@
 #include <memory>
 #include <vector>
 
+
 namespace nere {
 
     class FirstApp {
@@ -26,7 +28,7 @@ namespace nere {
             static constexpr int WIDTH = 800;
             static constexpr int HEIGHT = 600;
 
-            FirstApp();
+            FirstApp(struct UserSettings&);
             ~FirstApp();
 
             FirstApp(const NereWindow &) = delete;
@@ -36,23 +38,31 @@ namespace nere {
 
         private:
             void loadModels();
+            void createDescriptorSet();
             void createPipelineLayout();
             void createPipeline();
             void createCommandBuffers();
             void drawFrame();
 
-            // instantialize a nereWindow
-            UserSettings userSettings{};
-            
+            UserSettings &userSettings_;
+
+            // instantialize a nereWindow        
             NereWindow nereWindow{WIDTH, HEIGHT, "test"};
 
             NereDevice nereDevice{nereWindow};
 
-            NereSwapChain nereSwapChain{nereDevice, nereWindow.getExtent()};
+            NereSwapChain nereSwapChain{nereDevice, nereWindow.getExtent(), userSettings_};
+
+            VkDescriptorPool descriptorPool;
+            std::vector<VkDescriptorSet> descriptorSets;
+            VkDescriptorSetLayout descriptorSetLayout;
+            std::vector<VkBuffer> descriptorBuffers;
+            std::vector<VkDeviceMemory> descriptorBuffersMemory;
 
             // read compiled shader code
             std::unique_ptr<NerePipeline> nerePipeline;
             VkPipelineLayout pipelineLayout;
+            
             std::vector<VkCommandBuffer> commandBuffers;
 
             std::unique_ptr<NereModel> nereModel;

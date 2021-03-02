@@ -1,6 +1,8 @@
 #pragma once
 
+#include "user_settings.hpp"
 #include "nere_device.hpp"
+#include "Pixel.hpp"
 
 // vulkan headers
 //#include <vulkan/vulkan.h>
@@ -15,7 +17,7 @@ class NereSwapChain {
  public:
   static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-  NereSwapChain(NereDevice &deviceRef, VkExtent2D windowExtent);
+  NereSwapChain(NereDevice &deviceRef, VkExtent2D windowExtent, struct UserSettings&);
   ~NereSwapChain();
 
   NereSwapChain(const NereSwapChain &) = delete;
@@ -36,7 +38,8 @@ class NereSwapChain {
   VkFormat findDepthFormat();
 
   VkResult acquireNextImage(uint32_t *imageIndex);
-  VkResult submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
+  VkResult submitGraphicsCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
+  VkResult submitComputeCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
 
  private:
   void createSwapChain();
@@ -45,6 +48,8 @@ class NereSwapChain {
   void createRenderPass();
   void createFramebuffers();
   void createSyncObjects();
+
+  UserSettings &userSettings_;
 
   // Helper functions
   VkSurfaceFormatKHR chooseSwapSurfaceFormat(

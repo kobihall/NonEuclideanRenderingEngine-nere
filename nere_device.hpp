@@ -16,10 +16,12 @@ struct SwapChainSupportDetails {
 
 struct QueueFamilyIndices {
   uint32_t graphicsFamily;
+  uint32_t computeFamily;
   uint32_t presentFamily;
   bool graphicsFamilyHasValue = false;
+  bool computeFamilyHasValue = false;
   bool presentFamilyHasValue = false;
-  bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
+  bool isComplete() { return graphicsFamilyHasValue && computeFamilyHasValue && presentFamilyHasValue; }
 };
 
 class NereDevice {
@@ -43,6 +45,7 @@ class NereDevice {
   VkDevice device() { return device_; }
   VkSurfaceKHR surface() { return surface_; }
   VkQueue graphicsQueue() { return graphicsQueue_; }
+  VkQueue computeQueue() { return computeQueue_; }
   VkQueue presentQueue() { return presentQueue_; }
 
   SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport(physicalDevice); }
@@ -99,6 +102,7 @@ class NereDevice {
   VkDevice device_;
   VkSurfaceKHR surface_;
   VkQueue graphicsQueue_;
+  VkQueue computeQueue_;
   VkQueue presentQueue_;
 
   const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};

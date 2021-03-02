@@ -1,6 +1,6 @@
 //
 //  nere_pipeline.hpp
-//  NonEuclideanRenderingEngine-nere main file
+//  NonEuclideanRenderingEngine
 //
 //  Created by Kobi Hall on 2/18/21.
 //  Copyright © 2021 Kobi Hall. All rights reserved.
@@ -36,9 +36,7 @@ namespace nere {
         public:
         NerePipeline(
             NereDevice& device, 
-            const std::string& vertFilepath, 
-            const std::string& fragFilepath,
-            const std::string& compFilepath,
+            const std::string& shaderFilepath,
             const PipelineConfigInfo& configInfo);
         ~NerePipeline();
 

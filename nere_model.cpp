@@ -34,7 +34,7 @@ namespace nere {
             vertexBufferMemory);
         
         void *data;
-        vkMapMemory(nereDevice.device(), vertexBufferMemory, 0 ,bufferSize, 0, &data);
+        vkMapMemory(nereDevice.device(), vertexBufferMemory, 0, bufferSize, 0, &data);
         memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
         vkUnmapMemory(nereDevice.device(), vertexBufferMemory);
     }

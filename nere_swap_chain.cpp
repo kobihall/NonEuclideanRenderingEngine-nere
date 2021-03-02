@@ -11,8 +11,7 @@
 
 namespace nere {
 
-NereSwapChain::NereSwapChain(NereDevice &deviceRef, VkExtent2D extent)
-    : device{deviceRef}, windowExtent{extent} {
+NereSwapChain::NereSwapChain(NereDevice &deviceRef, VkExtent2D extent, UserSettings &userSettings) : device{deviceRef}, windowExtent{extent}, userSettings_{userSettings} {
   createSwapChain();
   createImageViews();
   createRenderPass();
@@ -71,8 +70,7 @@ VkResult NereSwapChain::acquireNextImage(uint32_t *imageIndex) {
   return result;
 }
 
-VkResult NereSwapChain::submitCommandBuffers(
-    const VkCommandBuffer *buffers, uint32_t *imageIndex) {
+VkResult NereSwapChain::submitGraphicsCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex) {
   if (imagesInFlight[*imageIndex] != VK_NULL_HANDLE) {
     vkWaitForFences(device.device(), 1, &imagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
   }
@@ -95,10 +93,79 @@ VkResult NereSwapChain::submitCommandBuffers(
   submitInfo.pSignalSemaphores = signalSemaphores;
 
   vkResetFences(device.device(), 1, &inFlightFences[currentFrame]);
+  // submit graphics queue command buffer
   if (vkQueueSubmit(device.graphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) !=
       VK_SUCCESS) {
     throw std::runtime_error("failed to submit draw command buffer!");
   }
+
+  VkPresentInfoKHR presentInfo = {};
+  presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+  presentInfo.waitSemaphoreCount = 1;
+  presentInfo.pWaitSemaphores = signalSemaphores;
+
+  VkSwapchainKHR swapChains[] = {swapChain};
+  presentInfo.swapchainCount = 1;
+  presentInfo.pSwapchains = swapChains;
+
+  presentInfo.pImageIndices = imageIndex;
+
+  auto result = vkQueuePresentKHR(device.presentQueue(), &presentInfo);
+
+  currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
+  return result;
+}
+
+VkResult NereSwapChain::submitComputeCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex) {
+  if (imagesInFlight[*imageIndex] != VK_NULL_HANDLE) {
+    vkWaitForFences(device.device(), 1, &imagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
+  }
+  imagesInFlight[*imageIndex] = inFlightFences[currentFrame];
+
+  VkSubmitInfo submitInfo = {};
+  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+  VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
+  VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+  submitInfo.waitSemaphoreCount = 1;
+  submitInfo.pWaitSemaphores = waitSemaphores;
+  submitInfo.pWaitDstStageMask = waitStages;
+
+  submitInfo.commandBufferCount = 1;
+  submitInfo.pCommandBuffers = buffers;
+
+  VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
+  submitInfo.signalSemaphoreCount = 1;
+  submitInfo.pSignalSemaphores = signalSemaphores;
+
+  vkResetFences(device.device(), 1, &inFlightFences[currentFrame]);
+  // submit compute queue command buffer
+  /*auto result = vkQueueSubmit(device.computeQueue(), 1, &submitInfo, inFlightFences[currentFrame]);
+  if (result != VK_SUCCESS) {
+    throw std::runtime_error("failed to submit draw compute command buffer!");
+  }*/
+  if (vkQueueSubmit(device.graphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) !=
+      VK_SUCCESS) {
+    throw std::runtime_error("failed to submit draw graphics command buffer!");
+  }
+
+  /*void* mappedMemory = nullptr;
+  vkMapMemory(device.device(), descriptorBufferMemory, 0, sizeof(Pixel)*userSettings_.width*userSettings_.height, 0, &mappedMemory);
+  
+  Pixel* pmappedMemory = (Pixel *)mappedMemory;
+
+  std::vector<unsigned char> image;
+  image.reserve(userSettings_.width*userSettings_.height*4);
+  for(int i = 0; i < userSettings_.width*userSettings_.height; i++) {
+    image.push_back((unsigned char)(255.0f) * (pmappedMemory[i].r));
+    image.push_back((unsigned char)(255.0f) * (pmappedMemory[i].g));
+    image.push_back((unsigned char)(255.0f) * (pmappedMemory[i].b));
+    image.push_back((unsigned char)(255.0f) * (pmappedMemory[i].a));
+  }
+
+  vkUnmapMemory(device.device(), descriptorBufferMemory);*/
 
   VkPresentInfoKHR presentInfo = {};
   presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -144,7 +211,7 @@ void NereSwapChain::createSwapChain() {
   createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
   QueueFamilyIndices indices = device.findPhysicalQueueFamilies();
-  uint32_t queueFamilyIndices[] = {indices.graphicsFamily, indices.presentFamily};
+  uint32_t queueFamilyIndices[] = {indices.computeFamily, indices.graphicsFamily, indices.presentFamily};
 
   if (indices.graphicsFamily != indices.presentFamily) {
     createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -357,15 +424,13 @@ void NereSwapChain::createSyncObjects() {
   }
 }
 
-VkSurfaceFormatKHR NereSwapChain::chooseSwapSurfaceFormat(
-    const std::vector<VkSurfaceFormatKHR> &availableFormats) {
+VkSurfaceFormatKHR NereSwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
   for (const auto &availableFormat : availableFormats) {
     if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&
         availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
       return availableFormat;
     }
   }
-
   return availableFormats[0];
 }
 

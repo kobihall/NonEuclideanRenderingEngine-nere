@@ -47,7 +47,7 @@ void DestroyDebugUtilsMessengerEXT(
 }
 
 // class member functions
-NereDevice::NereDevice(NereWindow &window) : window{window} {
+NereDevice::NereDevice(NereWindow &window, UserSettings &userSettings) : window{window}, userSettings{userSettings} {
   createInstance();
   setupDebugMessenger();
   createSurface();
@@ -191,6 +191,16 @@ void NereDevice::createCommandPool() {
   if (vkCreateCommandPool(device_, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
     throw std::runtime_error("failed to create command pool!");
   }
+}
+
+void NereDevice::initializeImGUI() {
+  QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+
+  userSettings.imguiInitInfo.Instance = instance;
+  userSettings.imguiInitInfo.PhysicalDevice = physicalDevice;
+  userSettings.imguiInitInfo.Device = device_;
+  userSettings.imguiInitInfo.QueueFamily = indices.graphicsFamily;
+  userSettings.imguiInitInfo.Queue = graphicsQueue_;
 }
 
 void NereDevice::createSurface() { window.createWindowSurface(instance, &surface_); }

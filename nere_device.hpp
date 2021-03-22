@@ -1,5 +1,6 @@
 #pragma once
 
+#include "user_settings.hpp"
 #include "nere_window.hpp"
 
 // std lib headers
@@ -30,7 +31,7 @@ class NereDevice {
   const bool enableValidationLayers = true;
 #endif
 
-  NereDevice(NereWindow &window);
+  NereDevice(NereWindow &window, UserSettings &userSettings);
   ~NereDevice();
 
   // Not copyable or movable
@@ -79,6 +80,7 @@ class NereDevice {
   void pickPhysicalDevice();
   void createLogicalDevice();
   void createCommandPool();
+  void NereDevice::initializeImGUI();
 
   // helper functions
   bool isDeviceSuitable(VkPhysicalDevice device);
@@ -94,6 +96,7 @@ class NereDevice {
   VkDebugUtilsMessengerEXT debugMessenger;
   VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
   NereWindow &window;
+  UserSettings &userSettings;
   VkCommandPool commandPool;
 
   VkDevice device_;

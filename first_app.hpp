@@ -8,11 +8,13 @@
 
 #pragma once
 
+#include "user_settings.hpp"
 #include "nere_window.hpp"
 #include "nere_pipeline.hpp"
 #include "nere_device.hpp"
 #include "nere_swap_chain.hpp"
 #include "nere_model.hpp"
+#include "user_interface.hpp"
 
 // std
 #include <memory>
@@ -25,7 +27,7 @@ namespace nere {
             static constexpr int WIDTH = 800;
             static constexpr int HEIGHT = 600;
 
-            FirstApp();
+            FirstApp(struct UserSettings&);
             ~FirstApp();
 
             FirstApp(const NereWindow &) = delete;
@@ -39,6 +41,8 @@ namespace nere {
             void createPipeline();
             void createCommandBuffers();
             void drawFrame();
+
+            UserSettings &userSettings_;
 
             // instantialize a nereWindow
             NereWindow nereWindow{WIDTH, HEIGHT, "test"};

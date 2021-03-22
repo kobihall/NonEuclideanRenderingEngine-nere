@@ -15,7 +15,10 @@
 #include <stdexcept>
 
 int main() {
-    nere::FirstApp app{};
+    UserSettings userSettings;
+    userSettings.width = 800;
+    userSettings.height = 600;
+    nere::FirstApp app{userSettings};
     
     // try&catch run from application
     try {

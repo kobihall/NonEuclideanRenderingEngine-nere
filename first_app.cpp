@@ -14,7 +14,7 @@
 
 namespace nere {
 
-    FirstApp::FirstApp() {
+    FirstApp::FirstApp(UserSettings &userSettings) : userSettings_{userSettings} {
         loadModels();
         createPipelineLayout();
         createPipeline();
@@ -104,6 +104,8 @@ namespace nere {
             clearValues[1].depthStencil = {1.0f, 0};
             renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
             renderPassInfo.pClearValues = clearValues.data();
+
+            ImGui_ImplVulkan_CreateFontsTexture(commandBuffers[i]);
 
             vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 

@@ -17,14 +17,18 @@ namespace nere {
 
     // configInfo for fixed function pipeline stages
     struct PipelineConfigInfo {
-        VkViewport viewport;
-        VkRect2D scissor;
+        PipelineConfigInfo(const PipelineConfigInfo&) = delete;
+        PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
+
+        VkPipelineViewportStateCreateInfo viewportInfo;
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
         VkPipelineRasterizationStateCreateInfo rasterizationInfo;
         VkPipelineMultisampleStateCreateInfo multisampleInfo;
         VkPipelineColorBlendAttachmentState colorBlendAttachment;
         VkPipelineColorBlendStateCreateInfo colorBlendInfo;
         VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
+        std::vector<VkDynamicState> dynamicStateEnables;
+        VkPipelineDynamicStateCreateInfo dynamicStateInfo;
         VkPipelineLayout pipelineLayout = nullptr;
         VkRenderPass renderPass = nullptr;
         uint32_t subpass = 0;
@@ -41,12 +45,12 @@ namespace nere {
 
         // not sure why this is needed
         NerePipeline(const NerePipeline&) = delete;
-        void operator=(const NerePipeline&) = delete;
+        NerePipeline& operator=(const NerePipeline&) = delete;
 
         void bind(VkCommandBuffer commandBuffer);
 
         // fills configInfo members for each pipeline stage
-        static PipelineConfigInfo defaultPipelineConfigInfo(uint32_t width, uint32_t height);
+        static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
 
         private:
         // reads .spv shader file and outputs the code to a buffer

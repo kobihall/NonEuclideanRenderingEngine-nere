@@ -13,6 +13,18 @@ namespace nere {
 
 NereSwapChain::NereSwapChain(NereDevice &deviceRef, VkExtent2D extent)
     : device{deviceRef}, windowExtent{extent} {
+  init();
+}
+
+NereSwapChain::NereSwapChain(NereDevice &deviceRef, VkExtent2D extent, std::shared_ptr<NereSwapChain> previous)
+    : device{deviceRef}, windowExtent{extent}, oldSwapChain{previous} {
+  init();
+
+  oldSwapChain = nullptr;
+}
+
+
+void NereSwapChain::init(){
   createSwapChain();
   createImageViews();
   createRenderPass();
@@ -71,8 +83,7 @@ VkResult NereSwapChain::acquireNextImage(uint32_t *imageIndex) {
   return result;
 }
 
-VkResult NereSwapChain::submitCommandBuffers(
-    const VkCommandBuffer *buffers, uint32_t *imageIndex) {
+VkResult NereSwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex) {
   if (imagesInFlight[*imageIndex] != VK_NULL_HANDLE) {
     vkWaitForFences(device.device(), 1, &imagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
   }
@@ -113,6 +124,8 @@ VkResult NereSwapChain::submitCommandBuffers(
   presentInfo.pImageIndices = imageIndex;
 
   auto result = vkQueuePresentKHR(device.presentQueue(), &presentInfo);
+
+  vkQueueWaitIdle(device.presentQueue());
 
   currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
@@ -162,7 +175,7 @@ void NereSwapChain::createSwapChain() {
   createInfo.presentMode = presentMode;
   createInfo.clipped = VK_TRUE;
 
-  createInfo.oldSwapchain = VK_NULL_HANDLE;
+  createInfo.oldSwapchain = oldSwapChain == nullptr ? VK_NULL_HANDLE : oldSwapChain->swapChain;
 
   if (vkCreateSwapchainKHR(device.device(), &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
     throw std::runtime_error("failed to create swap chain!");

@@ -38,14 +38,17 @@ namespace nere {
             void createPipelineLayout();
             void createPipeline();
             void createCommandBuffers();
+            void freeCommandBuffers();
             void drawFrame();
+            void recreateSwapChain();
+            void recordCommandBuffer(int imageIndex);
 
             // instantialize a nereWindow
             NereWindow nereWindow{WIDTH, HEIGHT, "test"};
 
             NereDevice nereDevice{nereWindow};
 
-            NereSwapChain nereSwapChain{nereDevice, nereWindow.getExtent()};
+            std::unique_ptr<NereSwapChain> nereSwapChain;
 
             // read compiled shader code
             std::unique_ptr<NerePipeline> nerePipeline;

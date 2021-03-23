@@ -8,6 +8,8 @@
 
 #include "first_app.hpp"
 
+#include "vulkan_initializers.hpp"
+
 // std
 #include <cassert>
 #include <stdexcept>
@@ -54,9 +56,9 @@ namespace nere {
         pipelineLayoutInfo.pSetLayouts = nullptr;
         pipelineLayoutInfo.pushConstantRangeCount = 0;
         pipelineLayoutInfo.pPushConstantRanges = nullptr;
-        if(vkCreatePipelineLayout(nereDevice.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create pipeline layout!");
-        }
+        
+        auto result = vkCreatePipelineLayout(nereDevice.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout);
+        initializers::check_vk_result(result);
     }
 
     void FirstApp::recreateSwapChain() {
